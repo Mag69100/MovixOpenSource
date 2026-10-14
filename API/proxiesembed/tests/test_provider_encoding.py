@@ -2,6 +2,8 @@
 
 import ast
 import asyncio
+import base64
+import binascii
 import hashlib
 import logging
 from pathlib import Path
@@ -10,7 +12,7 @@ import sys
 from types import SimpleNamespace
 import unittest
 from unittest.mock import AsyncMock, MagicMock
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 
 import aiohttp
 from aiohttp import ClientTimeout, web
@@ -19,6 +21,7 @@ PROXY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROXY_ROOT))
 from uqload_utils import (
     extract_uqload_media_url,
+    extract_uqload_subtitles,
     get_uqload_site_origin,
     normalize_uqload_embed_url,
     parse_allowed_uqload_url,
@@ -31,7 +34,8 @@ def load_proxy_headers():
     methods = {
         '_prepare_headers', 'fsvid_proxy_handler', 'vidzy_proxy_handler', 'uqload_proxy_handler',
         'fsvid_extract_handler', 'vidzy_extract_handler', '_is_fsvid_vidzy_embed_url',
-        '_extract_uqload_media_url', '_validate_uqload_url',
+        '_extract_uqload_media_url', '_extract_uqload_media', '_validate_uqload_url',
+        '_extract_m3u8_url',
     }
     proxy_class.body = [
         node for node in proxy_class.body
@@ -51,11 +55,13 @@ def load_proxy_headers():
         *constants, proxy_class,
     ], type_ignores=[])
     namespace = {
-        're': re, 'urlparse': urlparse,
+        're': re, 'urlparse': urlparse, 'urljoin': urljoin,
+        'base64': base64, 'binascii': binascii,
         'get_uqload_site_origin': get_uqload_site_origin,
         'parse_allowed_uqload_url': parse_allowed_uqload_url,
         'normalize_uqload_embed_url': normalize_uqload_embed_url,
         'extract_uqload_media_url': extract_uqload_media_url,
+        'extract_uqload_subtitles': extract_uqload_subtitles,
         'asyncio': asyncio, 'aiohttp': aiohttp, 'ClientTimeout': ClientTimeout,
         'web': web, 'hashlib': hashlib,
         '_signed_service_url': lambda route, url: url,
@@ -122,6 +128,33 @@ class ProviderEncodingTests(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual(response.status, 200)
                 headers = session.request.call_args.kwargs['headers']
                 self.assertNotIn('Accept-Encoding', headers)
+
+    def test_rolling_xor_survives_a_misread_width_measurement(self):
+        # Lecteur Vidzy d'octobre 2026 : la largeur mesurée est celle d'un
+        # enfant à 50 % d'un parent en `calc(1in + 60px)`, soit 78 px et non
+        # 156. Une graine mal relue doit quand même retrouver la vraie URL,
+        # jamais le leurre `troll`.
+        embed = 'https://vidzy.cc/embed-example.html'
+        media = 'https://v6.vidzy.cc/hls2/01/00064/,example_n,.urlset/master.m3u8?t=token&s=1'
+        host_sum = sum(map(ord, 'vidzy.cc')) & 255
+        encrypted = bytes(
+            ord(char) ^ ((0x3d + index * 89 + host_sum + 78) & 255)
+            for index, char in enumerate(media)
+        )[::-1]
+        payload = base64.b64encode(encrypted).decode()
+        script = (
+            'sources: [{src: (function(s){var h=(location&&location.hostname)||"",H=0;'
+            'for(var j=0;j<h.length;j++){H=(H+h.charCodeAt(j))&255;}var BC=0;try{'
+            'var _p=document.createElement("div");_p.style.cssText="position:absolute;width:calc(1in + 60px)";'
+            'var _ch=document.createElement("div");_ch.style.cssText="height:1px;width:50%";'
+            '_p.appendChild(_ch);BC=_ch.offsetWidth|0;}catch(e){}'
+            'var b=atob(s),a=b.split("").reverse().join(""),r="";'
+            'for(var i=0;i<a.length;i++){var kk=(0x3d+i*89+H+BC)&255;'
+            'r+=String.fromCharCode(a.charCodeAt(i)^kk)}'
+            'return /^https?:/.test(r)?r:"https://v6.vidzy.cc/troll/master.m3u8"})'
+            f'("{payload}"), type: "application/x-mpegURL"}}]'
+        )
+        self.assertEqual(self.proxy._extract_m3u8_url(script, embed), media)
 
 
 if __name__ == '__main__':

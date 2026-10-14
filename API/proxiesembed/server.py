@@ -4311,19 +4311,41 @@ class ProxyServer:
                 encrypted = base64.b64decode(payload, altchars=b'-_', validate=True)
                 if match.group('pre_reverse'):
                     encrypted = encrypted[::-1]
-                decoded_bytes = bytes(
-                    value ^ ((seed + index * step) & mask)
-                    for index, value in enumerate(encrypted)
-                )
-                if not match.group('pre_reverse') and re.search(
+                post_reverse = not match.group('pre_reverse') and re.search(
                     r'\.reverse\(\s*\)\s*\.join',
                     match.group('tail'),
-                ):
-                    decoded_bytes = decoded_bytes[::-1]
-                candidate = normalize(decoded_bytes.decode('utf-8'))
+                )
+
+                def decode_with(seed_value: int) -> Optional[str]:
+                    decoded_bytes = bytes(
+                        value ^ ((seed_value + index * step) & mask)
+                        for index, value in enumerate(encrypted)
+                    )
+                    if post_reverse:
+                        decoded_bytes = decoded_bytes[::-1]
+                    try:
+                        return normalize(decoded_bytes.decode('utf-8'))
+                    except UnicodeDecodeError:
+                        return None
+
+                candidate = decode_with(seed)
                 if candidate:
                     return candidate
-            except (ValueError, UnicodeDecodeError, binascii.Error):
+
+                # La graine dépend de mesures faites dans le navigateur
+                # (offsetWidth d'un div enfant à 50 % d'un parent en
+                # `calc(1in + Npx)`, somme du hostname…) que la page fait
+                # tourner. Une mesure mal relue donnait une clé fausse, donc le
+                # leurre `troll` et un 404. La graine n'a que `mask + 1`
+                # valeurs possibles : on les essaie toutes, et `normalize`
+                # n'accepte qu'une URL m3u8 complète hors leurre.
+                for alternative in range(mask + 1):
+                    if alternative == seed & mask:
+                        continue
+                    candidate = decode_with(alternative)
+                    if candidate and re.fullmatch(r'[\x21-\x7e]+', candidate):
+                        return candidate
+            except (ValueError, binascii.Error):
                 continue
 
         # New fsvid/vidzy player format:
