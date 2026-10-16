@@ -2029,14 +2029,30 @@ class ProxyServer:
         if password:
             form_data.add_field('pass', password)
 
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                'https://www.deepbrid.com/api/v1/generate/link',
-                headers=headers,
-                data=form_data,
-                timeout=ClientTimeout(total=30)
-            ) as resp:
-                result = await resp.json(content_type=None)
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    'https://www.deepbrid.com/api/v1/generate/link',
+                    headers=headers,
+                    data=form_data,
+                    timeout=ClientTimeout(total=30)
+                ) as resp:
+                    status_code = resp.status
+                    raw_text = (await resp.text()).strip()
+        except aiohttp.ClientError as e:
+            logger.warning(f'[DEBRID][DEEPBRID] Network error: {e}')
+            return web.json_response({'status': 'error', 'error': 'Deepbrid est injoignable pour le moment, réessaie plus tard.'}, status=502)
+
+        try:
+            result = json.loads(raw_text) if raw_text else None
+        except ValueError:
+            result = None
+
+        # Deepbrid passe par Cloudflare : quand son serveur tombe, on reçoit une
+        # page texte (« error code: 522 ») au lieu du JSON attendu.
+        if not isinstance(result, dict):
+            logger.warning(f'[DEBRID][DEEPBRID] Non-JSON response (HTTP {status_code}): {raw_text[:120]!r}')
+            return web.json_response({'status': 'error', 'error': f'Deepbrid ne répond pas (HTTP {status_code}), réessaie plus tard.'}, status=502)
 
         if result.get('error') == 0 and result.get('link'):
             return web.json_response({
@@ -2470,7 +2486,7 @@ class ProxyServer:
 
 
         except asyncio.TimeoutError:
-            return web.json_response({'status': 'error', 'error': 'Timeout lors du dÃ©bridage'}, status=504)
+            return web.json_response({'status': 'error', 'error': 'Timeout lors du débridage'}, status=504)
         except Exception as e:
             logger.error(f'[DEBRID] Error unlocking link: {e}')
             return web.json_response({'status': 'error', 'error': 'Erreur interne du serveur'}, status=500)
