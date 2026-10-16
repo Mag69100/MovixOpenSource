@@ -1,13 +1,13 @@
 {
-  "version": "2.6.6",
-  "buildNumber": 43,
+  "version": "2.6.7",
+  "buildNumber": 44,
   "apkUrl": "https://raw.githubusercontent.com/movixstream/MovixOpenSource/main/app/movix-android.apk",
-  "apkSizeBytes": 64300417,
-  "apkSha256": "117a196715fd38cf12545b3830a49a9bb610560cc1439a1689d6829d805ce078",
+  "apkSizeBytes": 64300621,
+  "apkSha256": "4ecae1ae732842d8076708d0ff365f0376eabab4e9488b2c4ea294659102cf80",
   "mandatory": false,
-  "releasedAt": "2026-10-14T11:35:31.000Z",
+  "releasedAt": "2026-10-16T09:20:20.000Z",
   "releaseNotes": {
-    "fr": "L'extraction des lecteurs Fsvid et Vidzy a été corrigée : ils se lancent à nouveau.",
-    "en": "Fsvid and Vidzy player extraction has been fixed: they play again."
+    "fr": "Fsvid et Vidzy ne lancent plus la fausse vidéo « troll » : le vrai film se lit à nouveau.",
+    "en": "Fsvid and Vidzy no longer play the fake \"troll\" video: the real movie plays again."
   }
 }
