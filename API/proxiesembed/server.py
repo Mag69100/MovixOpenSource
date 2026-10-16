@@ -886,16 +886,51 @@ PROBLEMATIC_DOMAINS = frozenset([
     '1396168994.live', 'vuunov.1396168994.live'
 ])
 
-# Fsvid/Vidzy gate their HLS CDN on Referer + the presence of Sec-Ch-Ua.
-# A request missing either one is answered with a 302 to their decoy stream
-# (s1.fsvid.lol/troll/master.m3u8) on fsvid, or a bare 403 on vidzy.
+# Fsvid/Vidzy servent un flux leurre (« vidéo troll ») au client qu'ils jugent
+# illégitime : jadis une 302 vers s1.fsvid.lol/troll/master.m3u8, désormais
+# aussi une playlist 200 servie à l'URL réelle, de neuf segments `/e/segN.ts`.
+# Vidzy répond en plus 403 à une empreinte TLS non navigateur (d'où curl_cffi).
 FSVID_VIDZY_SEC_CH_UA = '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"'
 
-# Le CDN Vidzy refuse l'absence du token zstd dans Accept-Encoding (403).
-# q=0 conserve les tokens du navigateur tout en demandant un corps identity :
+# Uqload : q=0 conserve les tokens du navigateur tout en demandant un corps
+# identity (surtout pas pour Fsvid/Vidzy, voir plus bas) :
 # aiohttp 3.11 ne décode pas zstd, et les plages MP4 doivent rester inchangées.
 # Réservé aux médias : les pages d'extraction renvoient du zstd même avec q=0.
 PROVIDER_MEDIA_ACCEPT_ENCODING = 'identity, gzip;q=0, deflate;q=0, br;q=0, zstd;q=0'
+
+# Fsvid/Vidzy : refuser explicitement gzip (`gzip;q=0`) suffit à recevoir le
+# leurre `/e/segN.ts` à la place du vrai master (mesuré le 2026-10-15 sur
+# s1.fsvid.lol et v6/u14.vidzy.cc). `identity` seul donne le vrai flux, non
+# compressé, playlists comme plages de segments. Le 403 qui avait motivé le
+# token zstd venait de l'empreinte TLS, pas de cet en-tête.
+FSVID_VIDZY_MEDIA_ACCEPT_ENCODING = 'identity'
+_FSVID_VIDZY_DECOY_PATH = re.compile(r'^/e/seg\d+\.ts$', re.IGNORECASE)
+
+
+def is_fsvid_vidzy_decoy_url(url: str) -> bool:
+    """Vrai pour une URL du flux leurre Fsvid/Vidzy (`/troll/…` ou `/e/segN.ts`)."""
+    try:
+        parsed = urlparse(str(url or ''))
+    except ValueError:
+        return False
+    hostname = (parsed.hostname or '').lower().rstrip('.')
+    if not any(
+        hostname == suffix or hostname.endswith(f'.{suffix}')
+        for suffix in ('fsvid.lol', 'vidzy.cc', 'vidzy.org')
+    ):
+        return False
+    path = parsed.path.lower()
+    return 'troll' in path.split('/') or bool(_FSVID_VIDZY_DECOY_PATH.match(path))
+
+
+def is_fsvid_vidzy_decoy_playlist(text: str, base_url: str) -> bool:
+    """Vrai si une playlist Fsvid/Vidzy ne référence que le flux leurre."""
+    uris = [
+        urljoin(base_url, line.strip())
+        for line in text.splitlines()
+        if line.strip() and not line.lstrip().startswith('#')
+    ]
+    return bool(uris) and all(is_fsvid_vidzy_decoy_url(uri) for uri in uris)
 
 # Un vrai Chrome n'émet jamais Sec-Ch-Ua seul : les trois indices client
 # partent ensemble, avec un User-Agent dont la version majeure correspond à
@@ -3416,7 +3451,7 @@ class ProxyServer:
         if self.RE_FSVID.search(target_url):
             return {
                 'Accept': 'application/vnd.apple.mpegurl,*/*',
-                'Accept-Encoding': PROVIDER_MEDIA_ACCEPT_ENCODING,
+                'Accept-Encoding': FSVID_VIDZY_MEDIA_ACCEPT_ENCODING,
                 'Host': target_host,
                 'Origin': 'https://fsvid.lol',
                 'Referer': 'https://fsvid.lol/',
@@ -3443,7 +3478,7 @@ class ProxyServer:
         if self.RE_VIDZY.search(target_url):
             return {
                 'Accept': 'application/vnd.apple.mpegurl,*/*',
-                'Accept-Encoding': PROVIDER_MEDIA_ACCEPT_ENCODING,
+                'Accept-Encoding': FSVID_VIDZY_MEDIA_ACCEPT_ENCODING,
                 'Host': target_host,
                 'Origin': 'https://vidzy.org',
                 'Referer': 'https://vidzy.org/',
@@ -5446,6 +5481,29 @@ class ProxyServer:
     
     # ===== Service-Specific Proxy Routes =====
     
+    @staticmethod
+    def _fsvid_vidzy_decoy_playlist_response(
+        service_name: str,
+        text: str,
+        response_url: str,
+        target_url: str,
+    ) -> Optional[Response]:
+        """502 au lieu de relayer la playlist leurre que Fsvid/Vidzy servent en 200."""
+        if service_name not in ('fsvid', 'vidzy'):
+            return None
+        if not is_fsvid_vidzy_decoy_playlist(text, response_url):
+            return None
+        logger.warning(
+            "[%s-PROXY] Decoy playlist refused for %s",
+            service_name.upper(),
+            redact_url_for_log(target_url),
+        )
+        return web.json_response(
+            {"error": "Upstream returned a decoy stream"},
+            status=502,
+            headers=CORS_HEADERS,
+        )
+
     def _rewrite_m3u8_for_service(self, content: str, base_url: str, proxy_route: str, extra_query: str = '') -> str:
         """Rewrite M3U8 URLs to go through a service-specific proxy route"""
         base_url_dir = base_url.rsplit('/', 1)[0] + '/'
@@ -5571,7 +5629,7 @@ class ProxyServer:
         
         # Same guard as on the redirect below: never relay the Fsvid/Vidzy decoy
         # stream, even when it reaches us through a stale cache or a crafted url.
-        if service_name in ('fsvid', 'vidzy') and 'troll' in target_url.lower():
+        if service_name in ('fsvid', 'vidzy') and is_fsvid_vidzy_decoy_url(target_url):
             logger.warning(
                 "[%s-PROXY] Decoy target refused for %s",
                 service_name.upper(),
@@ -5761,7 +5819,7 @@ class ProxyServer:
                     # troll video, so surface the rejection instead.
                     if (
                         service_name in ('fsvid', 'vidzy')
-                        and 'troll' in redirected.lower()
+                        and is_fsvid_vidzy_decoy_url(redirected)
                     ):
                         logger.warning(
                             "[%s-PROXY] Decoy redirect refused for %s",
@@ -5839,6 +5897,11 @@ class ProxyServer:
                             status=502,
                             headers=CORS_HEADERS,
                         )
+                    decoy = self._fsvid_vidzy_decoy_playlist_response(
+                        service_name, text, response_url, target_url,
+                    )
+                    if decoy is not None:
+                        return decoy
                     rewritten = self._rewrite_m3u8_for_service(
                         text,
                         response_url,
@@ -5881,6 +5944,11 @@ class ProxyServer:
                                 status=502,
                                 headers=CORS_HEADERS,
                             )
+                        decoy = self._fsvid_vidzy_decoy_playlist_response(
+                            service_name, text, response_url, target_url,
+                        )
+                        if decoy is not None:
+                            return decoy
                         rewritten = self._rewrite_m3u8_for_service(
                             text,
                             response_url,
@@ -6069,7 +6137,7 @@ class ProxyServer:
         """FSVID proxy"""
         return await self._service_proxy_via_random_socks(request, 'fsvid', {
             'Accept': 'application/vnd.apple.mpegurl,*/*',
-            'Accept-Encoding': PROVIDER_MEDIA_ACCEPT_ENCODING,
+            'Accept-Encoding': FSVID_VIDZY_MEDIA_ACCEPT_ENCODING,
             'Origin': 'https://fsvid.lol',
             'Referer': 'https://fsvid.lol/',
             **FSVID_VIDZY_CLIENT_HINTS,
@@ -6157,7 +6225,7 @@ class ProxyServer:
         """Vidzy proxy"""
         return await self._service_proxy_via_random_socks(request, 'vidzy', {
             'Accept': 'application/vnd.apple.mpegurl,*/*',
-            'Accept-Encoding': PROVIDER_MEDIA_ACCEPT_ENCODING,
+            'Accept-Encoding': FSVID_VIDZY_MEDIA_ACCEPT_ENCODING,
             'Origin': 'https://vidzy.org',
             'Referer': 'https://vidzy.org/',
             **FSVID_VIDZY_CLIENT_HINTS,

@@ -75,13 +75,16 @@ class ProviderEncodingTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.proxy = load_proxy_headers()
 
-    def assert_identity_with_browser_tokens(self, headers):
-        # Vidzy refuse les requêtes sans « zstd ». q=0 interdit la compression
-        # correspondante : aiohttp 3.11 et les clients Android restent compatibles.
-        self.assertEqual(
-            headers.get('Accept-Encoding'),
-            'identity, gzip;q=0, deflate;q=0, br;q=0, zstd;q=0',
-        )
+    def assert_media_encoding(self, provider, headers):
+        if provider == 'uqload':
+            self.assertEqual(
+                headers.get('Accept-Encoding'),
+                'identity, gzip;q=0, deflate;q=0, br;q=0, zstd;q=0',
+            )
+        else:
+            # `gzip;q=0` fait servir à Fsvid/Vidzy leur playlist leurre
+            # `/e/segN.ts` en 200 : seul `identity` donne le vrai flux.
+            self.assertEqual(headers.get('Accept-Encoding'), 'identity')
 
     async def test_dedicated_and_generic_relays_use_the_same_encoding(self):
         proxy = self.proxy
@@ -101,7 +104,7 @@ class ProviderEncodingTests(unittest.IsolatedAsyncioTestCase):
                 dedicated = relay.call_args.args[2]
                 generic = proxy._prepare_headers(url, request)
                 for headers in (dedicated, generic):
-                    self.assert_identity_with_browser_tokens(headers)
+                    self.assert_media_encoding(provider, headers)
                     self.assertEqual(headers['Origin'], origin)
                     self.assertEqual(headers['Referer'], f'{origin}/')
 
@@ -155,6 +158,58 @@ class ProviderEncodingTests(unittest.IsolatedAsyncioTestCase):
             f'("{payload}"), type: "application/x-mpegURL"}}]'
         )
         self.assertEqual(self.proxy._extract_m3u8_url(script, embed), media)
+
+
+def load_decoy_helpers():
+    tree = ast.parse((PROXY_ROOT / 'server.py').read_text(encoding='utf-8-sig'))
+    names = {'is_fsvid_vidzy_decoy_url', 'is_fsvid_vidzy_decoy_playlist', '_FSVID_VIDZY_DECOY_PATH'}
+    body = [
+        node for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name in names
+        or isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id in names for target in node.targets
+        )
+    ]
+    namespace = {'re': re, 'urlparse': urlparse, 'urljoin': urljoin}
+    exec(compile(ast.Module(body=body, type_ignores=[]), 'server.py', 'exec'), namespace)
+    return namespace
+
+
+class FsvidVidzyDecoyTests(unittest.TestCase):
+    def setUp(self):
+        self.helpers = load_decoy_helpers()
+
+    def test_decoy_urls(self):
+        is_decoy = self.helpers['is_fsvid_vidzy_decoy_url']
+        for url in [
+            'https://s1.fsvid.lol/troll/master.m3u8',
+            'https://v6.vidzy.cc/troll/master.m3u8',
+            'https://s1.fsvid.lol/e/seg0.ts',
+            'https://u14.vidzy.cc/e/seg8.ts',
+        ]:
+            with self.subTest(url=url):
+                self.assertTrue(is_decoy(url))
+        for url in [
+            'https://s1.fsvid.lol/hls2/01/00031/cq02gw2dbv0t_n/seg-1-v1-a1.ts?t=x',
+            'https://u14.vidzy.cc/hls2/05/00064/,id_n,.urlset/master.m3u8?t=x',
+            'https://example.com/e/seg0.ts',
+        ]:
+            with self.subTest(url=url):
+                self.assertFalse(is_decoy(url))
+
+    def test_decoy_playlist_served_with_200(self):
+        # Playlist relevée le 2026-10-15 à l'URL réelle du master quand la
+        # requête portait `Accept-Encoding: identity, gzip;q=0, …`.
+        decoy = '#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:2\n' + ''.join(
+            f'#EXTINF:2.0,\nhttps://s1.fsvid.lol/e/seg{index}.ts\n' for index in range(9)
+        ) + '#EXT-X-ENDLIST\n'
+        master = 'https://s1.fsvid.lol/hls2/01/00031/,id_n,.urlset/master.m3u8?t=x'
+        is_decoy_playlist = self.helpers['is_fsvid_vidzy_decoy_playlist']
+        self.assertTrue(is_decoy_playlist(decoy, master))
+        self.assertTrue(is_decoy_playlist(decoy.replace('https://s1.fsvid.lol', ''), master))
+        real = '#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=1\nindex-v1-a1.m3u8?t=x\n'
+        self.assertFalse(is_decoy_playlist(real, master))
+        self.assertFalse(is_decoy_playlist('#EXTM3U\n', master))
 
 
 if __name__ == '__main__':
