@@ -3,7 +3,7 @@
 Bloqueur de pubs du lecteur web (embed) de l'appli télé : le moteur
 [adblock-rust](https://github.com/brave/adblock-rust) de Brave (crate `adblock`
 0.13.3), appelé depuis Kotlin par JNI (`com.movix.tv.adblock.AdblockNative`,
-utilisé à travers `AdblockEngine`). Plan : `../docs/plans/2026-10-15-phase6-embed-souris-bloqueur.md`.
+utilisé à travers `AdblockEngine`).
 
 Tout est préparé sur la machine de build et **commité** :
 
@@ -18,10 +18,6 @@ Tout est préparé sur la machine de build et **commité** :
 Le build Gradle n'a donc pas besoin de Rust, et la télé ne télécharge ni
 n'analyse aucune liste : elle désérialise `engine.dat` une fois, à la
 première ouverture du lecteur web.
-
-Tailles et temps mesurés le 15/10/2026 : 158 801 lignes de filtres ; `check`
-moyen de 14 µs sur PC (hôte, test `temps_moyen_de_check`). Sur la télé,
-`AdblockEngine` écrit la moyenne réelle dans le journal (`adb logcat -s MovixAdblock`).
 
 ## Contenu du crate
 
@@ -57,19 +53,9 @@ moyen de 14 µs sur PC (hôte, test `temps_moyen_de_check`). Sur la télé,
 
 ## Régénérer
 
-Prérequis (Windows, Git Bash) :
-
-```bash
-# Rust, hôte GNU (pas besoin de Visual Studio)
-rustup-init.exe -y --default-host x86_64-pc-windows-gnu --profile minimal
-rustup target add armv7-linux-androideabi aarch64-linux-android i686-linux-android
-# cargo-ndk 3.5.4 en --locked : les versions récentes tirent windows-sys 0.61
-# (raw-dylib), qui ne compile pas avec l'hôte GNU minimal (dlltool sans `as`).
-cargo install cargo-ndk@3.5.4 --locked
-```
-
-Il faut aussi Node.js, curl, tar et le NDK (`ANDROID_NDK_HOME`, sinon
-`~/.cache/movix-android-build/sdk/ndk/26.1.10909125`).
+Prérequis : Rust avec les cibles `armv7-linux-androideabi`,
+`aarch64-linux-android` et `i686-linux-android`, `cargo-ndk` 3.5.4, Node.js,
+curl, tar et le NDK Android (`ANDROID_NDK_HOME`).
 
 ```bash
 cd app-tv/adblock

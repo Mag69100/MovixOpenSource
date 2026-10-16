@@ -13,6 +13,15 @@ Commencer par l’index du [README principal](README.md), puis les sections pert
 - [Extension](extension/README.md), [userscript](userscript/README.md) et [app mobile](app/README.md) : intégrations navigateur et WebView.
 - [Appli TV native](app-tv/README.md) : Kotlin, Compose for TV, Media3, extraction QuickJS et publication de l’APK.
 
+## README : vitrine du dépôt open source
+
+Les README sont publiés tels quels sur le GitHub public MovixOpenSource. Ils s’adressent à quelqu’un qui découvre le projet : à quoi sert le module, comment l’installer, le lancer et le configurer, où regarder dans le code. Ce ne sont ni un journal de travail ni la mémoire de Claude.
+
+- Court et stable : une section par sujet, quelques lignes, des tableaux plutôt que des paragraphes.
+- Jamais : détails d’implémentation (verrous, TTL, seuils, ordres d’écriture, codes d’erreur de chaque route), historique des correctifs (« désormais », « a été retiré »), mesures datées, phases ou plans, chemins et outils de ce poste, émulateurs, clés de test.
+- Une nouvelle route ou fonctionnalité : une ligne ou une ligne de tableau suffit. Le détail va dans le code, ses commentaires et le message de commit.
+- Ne pas supprimer une section propre au dépôt public (ex. « Fichiers SQLite pour Darkino / DarkiWorld » du README Main API).
+
 ## Contraintes du dépôt
 
 - Travailler directement sur `main`, sans nouvelle branche ni worktree sauf demande explicite contraire.
