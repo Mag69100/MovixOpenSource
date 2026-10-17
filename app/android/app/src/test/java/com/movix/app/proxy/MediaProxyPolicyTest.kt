@@ -263,6 +263,19 @@ class MediaProxyPolicyTest {
     }
 
     @Test
+    fun keepsFsvidVidzyOnCronetForTheChromeTlsFingerprint() {
+        // Leur CDN sert un faux master de 177 octets a un TLS non-Chrome (OkHttp).
+        for (host in listOf("r1.fsvid.lol", "fsvid.lol", "u14.vidzy.cc", "vidzy.org")) {
+            assertFalse(MediaProxyPolicy.requiresOkHttpUpstream("https://$host/master.m3u8"))
+        }
+        for (host in listOf("strm4.uqload.vc", "STRM4.UQLOAD.VC.")) {
+            assertTrue(MediaProxyPolicy.requiresOkHttpUpstream("https://$host/master.m3u8"))
+        }
+        assertFalse(MediaProxyPolicy.requiresOkHttpUpstream("https://notuqload.vc/master.m3u8"))
+        assertFalse(MediaProxyPolicy.requiresOkHttpUpstream("not-a-url"))
+    }
+
+    @Test
     fun buildsOpaqueLoopbackUrls() {
         val localUrl = MediaProxyPolicy.buildLoopbackUrl(
             port = 28123,

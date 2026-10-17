@@ -164,6 +164,23 @@ object MediaProxyPolicy {
         return if (uqloadHostPattern.containsMatchIn(host)) PROVIDER_MEDIA_ACCEPT_ENCODING else null
     }
 
+    /**
+     * Vrai si l'upstream doit passer par OkHttp plutôt que par Cronet. Seul
+     * Uqload : son profil exige un Accept-Encoding que Cronet réécrit.
+     *
+     * Plus Fsvid/Vidzy : depuis le 2026-10-16 au soir, leur CDN compare
+     * l'empreinte TLS au User-Agent. Un « Chrome Windows » dont le ClientHello
+     * n'est pas celui de Chrome (OkHttp) reçoit un faux master de 177 octets
+     * qui pointe sur `index.m3u8`, lui-même identique (levelParsingError).
+     * Cronet présente le TLS de Chromium et obtient le vrai flux, quel que soit
+     * l'Accept-Encoding (mesuré le 2026-10-17).
+     */
+    fun requiresOkHttpUpstream(rawUrl: String): Boolean {
+        val host = runCatching { URI(rawUrl).host?.lowercase(Locale.US)?.trimEnd('.') }
+            .getOrNull() ?: return false
+        return uqloadHostPattern.containsMatchIn(host)
+    }
+
     fun validatePublicHttpsUrl(
         rawUrl: String,
         resolver: (String) -> List<InetAddress> = {
