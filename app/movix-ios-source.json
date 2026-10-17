@@ -21,20 +21,20 @@
       },
       "versions": [
         {
-          "version": "2.6.7",
-          "buildVersion": "44",
-          "date": "2026-10-16",
-          "localizedDescription": "Version 2.6.7 (build 44). Notes de version : https://github.com/movixstream/MovixOpenSource/releases/tag/ios-v2.6.7",
+          "version": "2.6.8",
+          "buildVersion": "45",
+          "date": "2026-10-17",
+          "localizedDescription": "Version 2.6.8 (build 45). Notes de version : https://github.com/movixstream/MovixOpenSource/releases/tag/ios-v2.6.8",
           "downloadURL": "https://raw.githubusercontent.com/movixstream/MovixOpenSource/main/app/movix-ios-unsigner.ipa",
-          "size": 7318705,
+          "size": 7381532,
           "minOSVersion": "15.6"
         }
       ],
-      "version": "2.6.7",
-      "versionDate": "2026-10-16",
-      "versionDescription": "Version 2.6.7 (build 44). Notes de version : https://github.com/movixstream/MovixOpenSource/releases/tag/ios-v2.6.7",
+      "version": "2.6.8",
+      "versionDate": "2026-10-17",
+      "versionDescription": "Version 2.6.8 (build 45). Notes de version : https://github.com/movixstream/MovixOpenSource/releases/tag/ios-v2.6.8",
       "downloadURL": "https://raw.githubusercontent.com/movixstream/MovixOpenSource/main/app/movix-ios-unsigner.ipa",
-      "size": 7318705,
+      "size": 7381532,
       "beta": false
     }
   ],
