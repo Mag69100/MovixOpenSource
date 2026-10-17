@@ -77,6 +77,7 @@ const CLIENT_ID = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
 const sessions = [];
 const limiterOptions = [];
 let createSessionResult = 'session-tv-1';
+let vipExpiresAt = null;
 
 const routesDir = path.resolve(__dirname, '..');
 const stubs = {
@@ -117,7 +118,7 @@ const stubs = {
     buildVipIdentity: async (_userData, profileData) => {
       const raw = profileData?.access_code;
       return raw === '"VIP-TEST"'
-        ? { active: true, expiresAt: null, duration: null }
+        ? { active: true, expiresAt: vipExpiresAt, duration: null }
         : { active: false, expiresAt: null, duration: null };
     },
   },
@@ -160,6 +161,7 @@ test.beforeEach(() => {
   redis.status = 'ready';
   sessions.length = 0;
   createSessionResult = 'session-tv-1';
+  vipExpiresAt = null;
   clock += 3_600_000;
 });
 
@@ -233,6 +235,16 @@ test('start → info → confirm → poll : le jeton est remis une seule fois', 
   clock += 5000;
   assert.deepEqual((await poll(started.body.deviceCode)).body, { status: 'expired' });
   assert.equal([...redis.store.keys()].some((key) => key.startsWith('tvlink:dev:')), false);
+});
+
+test('clé VIP datée : expiresAt (BIGINT en ms) est remis en date ISO', async () => {
+  vipExpiresAt = 1823758332500;
+  const { body } = await start();
+  assert.equal((await confirm(body.userCode)).status, 200);
+  clock += 5000;
+  const approved = await poll(body.deviceCode);
+  assert.equal(approved.body.status, 'approved');
+  assert.deepEqual(approved.body.vip, { active: true, expiresAt: '2027-10-17T07:32:12.500Z', accessKey: 'VIP-TEST' });
 });
 
 test('deux appels à moins de 4 s donnent slow_down', async () => {

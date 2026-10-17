@@ -215,6 +215,18 @@ async function findPendingLink(userCode) {
 }
 
 /**
+ * `access_keys.expires_at` est un BIGINT en millisecondes : la télé attend une
+ * date ISO (chaîne). Un nombre fait échouer sa lecture de /poll, et comme la
+ * réponse « approved » n'est remise qu'une fois, la liaison est perdue.
+ */
+function toIsoDate(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const asNumber = typeof value === 'number' ? value : (/^\d+$/.test(String(value)) ? Number(value) : NaN);
+  const date = Number.isFinite(asNumber) ? new Date(asNumber) : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+/**
  * Clé VIP du profil choisi, revérifiée comme `buildVipIdentity` (oauth.js) :
  * seule `access_code` compte, contrôlée par `verifyAccessKey`, jamais `is_vip`.
  */
@@ -224,7 +236,7 @@ async function resolveProfileVip(profileData) {
   const active = identity?.active === true;
   return {
     active,
-    expiresAt: active ? (identity.expiresAt || null) : null,
+    expiresAt: active ? toIsoDate(identity.expiresAt) : null,
     accessKey: active ? (extractStringField(profileData, 'access_code') || null) : null,
   };
 }
