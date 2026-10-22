@@ -7,6 +7,7 @@ import com.movix.tv.data.account.AccountManager
 import com.movix.tv.data.account.HistoryApi
 import com.movix.tv.data.account.SwiftFluxClient
 import com.movix.tv.data.account.SyncManager
+import com.movix.tv.data.imdb.ImdbSuggestions
 import com.movix.tv.data.local.LocalStore
 import kotlinx.coroutines.launch
 import com.movix.tv.data.local.TvKeys
@@ -74,7 +75,9 @@ class AppContainer(context: Context) {
         ?: BuildConfig.TMDB_KEY.takeIf { it.isNotBlank() }
 
     val tmdb = TmdbApi(http, json, ::tmdbKey)
-    val catalog = CatalogRepository(tmdb)
+    /** Titres connus en tête de la recherche (barre de recherche d'imdb.com). */
+    val imdb = ImdbSuggestions(http, json)
+    val catalog = CatalogRepository(tmdb, imdb)
 
     val movix = MovixApi(http, json)
     // Clé de test de local.properties (debug et benchmark seulement, vide en

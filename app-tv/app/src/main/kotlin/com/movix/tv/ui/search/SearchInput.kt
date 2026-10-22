@@ -57,11 +57,12 @@ object SearchInput {
     }
 
     /**
-     * Titres proposés au-dessus des résultats : seulement ceux qui complètent
-     * vraiment le texte tapé (chaque mot tapé commence un mot du titre, dans
-     * l'ordre). TMDB renvoie aussi des titres sans rapport (« bre » → « Bad
-     * Boys ») : ils restent dans la grille, pas ici. Le titre qui commence par
-     * le texte passe devant ; sinon l'ordre de TMDB (popularité) est gardé.
+     * Titres proposés au-dessus des résultats, pris parmi les titres connus
+     * (les plus connus d'abord) : seulement ceux qui complètent vraiment le
+     * texte tapé (chaque mot tapé commence un mot du titre, dans l'ordre).
+     * IMDb propose aussi des titres sans rapport en français (« inter » →
+     * « Entretien avec un vampire ») : ils restent dans la grille, pas ici. Le
+     * titre qui commence par le texte passe devant ; sinon l'ordre reçu est gardé.
      */
     fun suggestions(query: String, titles: List<String>): List<String> {
         val q = fold(query)

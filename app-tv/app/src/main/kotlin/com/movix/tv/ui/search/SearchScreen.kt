@@ -82,6 +82,8 @@ fun SearchScreen(onOpen: (MediaItem) -> Unit, modifier: Modifier = Modifier) {
     var query by rememberSaveable { mutableStateOf("") }
     var page by rememberSaveable { mutableStateOf(KeyPage.LETTERS) }
     var results by remember { mutableStateOf<List<MediaItem>>(emptyList()) }
+    // Titres assez connus pour les titres proposés (IMDb, TMDB bien voté).
+    var known by remember { mutableStateOf<List<MediaItem>>(emptyList()) }
     var status by remember { mutableStateOf(SearchStatus.IDLE) }
     val firstKey = remember { FocusRequester() }
     val resultFocus = remember { FocusRequester() }
@@ -114,6 +116,7 @@ fun SearchScreen(onOpen: (MediaItem) -> Unit, modifier: Modifier = Modifier) {
         if (q == null) {
             parkFocus()
             results = emptyList()
+            known = emptyList()
             status = SearchStatus.IDLE
             return@LaunchedEffect
         }
@@ -126,8 +129,9 @@ fun SearchScreen(onOpen: (MediaItem) -> Unit, modifier: Modifier = Modifier) {
         } catch (_: Exception) {
             null
         }
-        if (found != results) parkFocus()
-        results = found.orEmpty()
+        if (found?.items != results) parkFocus()
+        results = found?.items.orEmpty()
+        known = found?.known.orEmpty()
         status = if (found == null) SearchStatus.FAILED else SearchStatus.DONE
     }
     // Nouveaux résultats : la grille repart du haut (sauf saut de focus, qui place la grille lui-même).
@@ -252,7 +256,7 @@ fun SearchScreen(onOpen: (MediaItem) -> Unit, modifier: Modifier = Modifier) {
                     },
                 )
             } else {
-                val suggestions = remember(results, query) { SearchInput.suggestions(query, results.map { it.title }) }
+                val suggestions = remember(known, query) { SearchInput.suggestions(query, known.map { it.title }) }
                 Column(Modifier.fillMaxSize()) {
                     if (suggestions.isNotEmpty()) {
                         // Une seule ligne fixe, sans défilement : un titre qui ne

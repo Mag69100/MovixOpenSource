@@ -42,6 +42,10 @@ class TmdbApi(
         get<TmdbPage>("/search/multi", mapOf("query" to query, "include_adult" to "false"))
             .results.filter { it.mediaType == "movie" || it.mediaType == "tv" }
 
+    /** Film ou série TMDB d'un identifiant IMDb (`tt…`), titre en français. */
+    suspend fun findImdb(imdbId: String): TmdbFind =
+        get("/find/$imdbId", mapOf("external_source" to "imdb_id"))
+
     /** `true` si TMDB accepte la clé (HTTP 200 sur /configuration). */
     suspend fun validateKey(key: String): Boolean = withContext(Dispatchers.IO) {
         val url = baseUrl.newBuilder().addPathSegments("configuration").addQueryParameter("api_key", key).build()

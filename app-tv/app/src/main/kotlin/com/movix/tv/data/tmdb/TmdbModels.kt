@@ -23,8 +23,17 @@ data class TmdbItem(
     @SerialName("backdrop_path") val backdropPath: String? = null,
     val overview: String? = null,
     @SerialName("vote_average") val voteAverage: Double? = null,
+    @SerialName("vote_count") val voteCount: Int = 0,
     @SerialName("release_date") val releaseDate: String? = null,
     @SerialName("first_air_date") val firstAirDate: String? = null,
+    val adult: Boolean = false,
+)
+
+/** Réponse de `/find/{id}` : le titre TMDB d'un identifiant IMDb. */
+@Serializable
+data class TmdbFind(
+    @SerialName("movie_results") val movies: List<TmdbItem> = emptyList(),
+    @SerialName("tv_results") val tv: List<TmdbItem> = emptyList(),
 )
 
 @Serializable
