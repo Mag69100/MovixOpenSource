@@ -87,7 +87,11 @@ class PlayerEngine(private val context: Context, private val http: OkHttpClient,
                 .setPreferredAudioLanguages("fr", "fre", "fra")
                 .build()
         }
-        val renderers = DefaultRenderersFactory(context).setEnableDecoderFallback(true)
+        // FFmpeg (module ffmpeg/) seulement après le décodeur du système et le
+        // passage direct vers l'ampli : le Dolby/DTS sort alors en PCM.
+        val renderers = DefaultRenderersFactory(context)
+            .setEnableDecoderFallback(true)
+            .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
         return ExoPlayer.Builder(context, renderers)
             .setLoadControl(loadControl)
             .setTrackSelector(trackSelector)

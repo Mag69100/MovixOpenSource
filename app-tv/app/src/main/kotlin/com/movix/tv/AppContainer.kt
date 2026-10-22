@@ -28,6 +28,9 @@ import com.movix.tv.data.tmdb.TmdbApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.serialization.json.Json
 import okhttp3.Cache
 import okhttp3.Dispatcher
@@ -90,6 +93,19 @@ class AppContainer(context: Context) {
     val swiftflux = SwiftFluxClient(http, json, movix.baseUrl)
     /** Rangée « Reprendre » lue sur le serveur (historique en base). */
     val history = HistoryApi(http, json, movix.baseUrl)
+
+    private val _wakeups = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    /**
+     * Écran rallumé ou fin de l'économiseur du système. Beaucoup de télés
+     * gardent l'appli au premier plan pendant la veille : aucun onStart au
+     * réveil, et les minuteurs (`delay`) ont été gelés pendant le sommeil.
+     */
+    val wakeups: SharedFlow<Unit> = _wakeups.asSharedFlow()
+
+    fun onWake() {
+        sync.onForeground()
+        _wakeups.tryEmit(Unit)
+    }
 
     /** Mise à jour depuis l'appli (manifeste `app-tv/version.json` du dépôt movix). */
     val updates = com.movix.tv.data.update.UpdateManager(context.applicationContext, http, store, appScope, BuildConfig.VERSION_CODE)

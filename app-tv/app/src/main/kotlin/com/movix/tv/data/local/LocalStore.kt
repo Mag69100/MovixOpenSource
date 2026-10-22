@@ -76,6 +76,8 @@ object TvKeys {
     const val SYNC_OUTBOX = "movix_tv_sync_outbox"
     /** L'écran de connexion a déjà été proposé au premier lancement. */
     const val LINK_PROMPTED = "movix_tv_link_prompted"
+    /** Recherches récentes (liste JSON, la plus récente d'abord). Restent sur la télé. */
+    const val SEARCH_RECENT = "movix_tv_search_recent"
     /** Mise à jour : dernière vérification (ms). */
     const val UPDATE_LAST_CHECK = "movix_tv_update_last_check"
     /** Mise à jour : dernier manifeste plus récent que l'appli, pour la proposer sans attendre le réseau. */

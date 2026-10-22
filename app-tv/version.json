@@ -1,12 +1,12 @@
 {
-  "versionCode": 1,
-  "versionName": "0.1.0",
+  "versionCode": 2,
+  "versionName": "0.2.0",
   "apkUrl": "https://raw.githubusercontent.com/movixstream/MovixOpenSource/main/app-tv/movix-tv.apk",
-  "apkSize": 8771423,
-  "apkSha256": "3bf3c7bcd3613301a4d537b13cef509f0622870d029b55286724a71613b515b1",
+  "apkSize": 9870628,
+  "apkSha256": "f8ff0d95491378f6b921b3e8e32dbe9c11d7b3f6948d3289a34b58a621ac5ee3",
   "minSdk": 25,
   "notes": {
-    "fr": "Première version de l'appli Movix TV.",
-    "en": "First release of the Movix TV app."
+    "fr": "Recherche : nouveau clavier façon YouTube (accents, symboles, micro) et titres proposés. Son Dolby et DTS lu même quand la télé ne le décode pas. « Reprendre » se met à jour au réveil de la télé. Date VIP corrigée.",
+    "en": "Search: new YouTube-style keyboard (accents, symbols, voice) and suggested titles. Dolby and DTS audio now plays even when the TV can't decode it. \"Continue watching\" refreshes when the TV wakes up. VIP date fixed."
   }
 }

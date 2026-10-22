@@ -37,8 +37,13 @@ data class LinkedProfile(val id: String, val name: String = "", val avatar: Stri
 @Serializable
 internal data class ProfilesResponse(val profiles: List<LinkedProfile> = emptyList())
 
+/**
+ * `expiresAt` : date ISO, ou nombre (millisecondes) sur un serveur plus ancien.
+ * Un `String` strict faisait échouer toute la lecture de `/poll` pour un compte
+ * VIP, et la réponse « approved » n'est remise qu'une fois : liaison perdue.
+ */
 @Serializable
-data class LinkedVip(val active: Boolean = false, val expiresAt: String? = null, val accessKey: String? = null)
+data class LinkedVip(val active: Boolean = false, val expiresAt: JsonElement? = null, val accessKey: String? = null)
 
 @Serializable
 data class LinkPoll(

@@ -131,6 +131,19 @@ class BrowseViewModel(private val container: AppContainer, private var specs: Li
                     if (visible) refreshRequests.trySend(SYNC_SETTLE_MS) else changedWhileHidden = true
                 }
             }
+            // Télé réveillée sans quitter l'accueil : relecture tout de suite
+            // (le délai laisse au Wi-Fi le temps de revenir).
+            viewModelScope.launch {
+                container.wakeups.collect { if (visible) refreshRequests.trySend(WAKE_SETTLE_MS) else changedWhileHidden = true }
+            }
+            // Accueil laissé affiché (titre vu sur le téléphone ou le site entre-temps) :
+            // relecture régulière tant qu'il est visible.
+            viewModelScope.launch {
+                while (true) {
+                    delay(PERIODIC_MS)
+                    if (visible) refreshRequests.trySend(0L)
+                }
+            }
         }
     }
 
@@ -154,6 +167,7 @@ class BrowseViewModel(private val container: AppContainer, private var specs: Li
             // Profil changé pendant l'appel : cette liste est celle de l'ancien.
             if (container.accounts.current?.profileId != account.profileId) return
             serverRow.value = ServerRow(account.profileId, items.mapNotNull { it.toContinueEntry() })
+            android.util.Log.i("MovixContinue", "rangée du serveur relue : ${items.size} titre(s)")
         } catch (e: SessionRevokedException) {
             serverRow.value = null
             container.accounts.logout(remote = false)
@@ -247,6 +261,10 @@ class BrowseViewModel(private val container: AppContainer, private var specs: Li
         const val REFRESH_MIN_MS = 30_000L
         /** Délai laissé à la synchro pour envoyer une écriture locale avant la relecture. */
         const val SYNC_SETTLE_MS = 6_000L
+        /** Délai après le réveil de la télé, le temps que le réseau revienne. */
+        const val WAKE_SETTLE_MS = 3_000L
+        /** Relecture de l'accueil resté affiché. */
+        const val PERIODIC_MS = 3 * 60_000L
         /** Fiches de « Reprendre » demandées à TMDB en même temps, au plus. */
         const val ENRICH_CONCURRENCY = 4
     }

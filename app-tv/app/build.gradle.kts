@@ -63,8 +63,8 @@ android {
         applicationId = "com.movix.tv"
         minSdk = 25
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
         buildConfigField("String", "TMDB_KEY", "\"$tmdbKey\"")
         buildConfigField("String", "DEV_VIP_KEY", "\"\"")
     }
@@ -180,6 +180,9 @@ dependencies {
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.hls)
     implementation(libs.media3.okhttp)
+    // Son Dolby / DTS décodé par l'appli quand la télé ne sait ni le décoder ni
+    // l'envoyer à l'ampli (module ffmpeg/, environ 1,1 Mo par ABI).
+    implementation(project(":ffmpeg"))
     // Cronet : la vraie empreinte TLS de Chrome (les CDN Fsvid/Vidzy bloquent
     // celle d'OkHttp). Chargé depuis les services Google quand ils existent ;
     // sinon (Fire TV) repli sur OkHttp.

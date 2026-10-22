@@ -288,7 +288,13 @@ private fun KeyField(value: String, onChange: (String) -> Unit, onDone: () -> Un
     )
 }
 
-/** Date ISO du serveur → « 1 janv. 2027 » ; la chaîne brute si elle ne se lit pas. */
+/**
+ * Date du serveur → « 1 janv. 2027 » : ISO, ou millisecondes (`access_keys.expires_at`
+ * est un BIGINT) ; la chaîne brute si elle ne se lit pas.
+ */
 private fun formatDate(iso: String): String = runCatching {
-    OffsetDateTime.parse(iso).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(Locale.getDefault()))
+    val date = iso.toLongOrNull()
+        ?.let { java.time.Instant.ofEpochMilli(it).atZone(java.time.ZoneId.systemDefault()).toLocalDate() }
+        ?: OffsetDateTime.parse(iso).toLocalDate()
+    date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(Locale.getDefault()))
 }.getOrDefault(iso.take(10))

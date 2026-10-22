@@ -5,6 +5,8 @@ Jetpack Compose for TV et Media3.
 
 - Catalogue, fiches, épisodes, recherche, Ma liste et réglages.
 - Lecteur natif avec les sources du serveur Movix, reprise et épisode suivant.
+- Son Dolby et DTS décodé par l'appli quand la télé ne le gère pas
+  ([`ffmpeg/`](ffmpeg/README.md)).
 - Extraction des lecteurs embed directement sur la télé, sans WebView : le
   userscript Movix tourne dans QuickJS (module `extractor/`).
 - Lecteur web avec bloqueur de pubs ([`adblock/`](adblock/README.md)).
