@@ -63,8 +63,8 @@ android {
         applicationId = "com.movix.tv"
         minSdk = 25
         targetSdk = 36
-        versionCode = 3
-        versionName = "0.2.1"
+        versionCode = 4
+        versionName = "0.2.2"
         buildConfigField("String", "TMDB_KEY", "\"$tmdbKey\"")
         buildConfigField("String", "DEV_VIP_KEY", "\"\"")
     }

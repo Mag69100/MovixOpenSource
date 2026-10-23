@@ -1,12 +1,12 @@
 {
-  "versionCode": 3,
-  "versionName": "0.2.1",
+  "versionCode": 4,
+  "versionName": "0.2.2",
   "apkUrl": "https://raw.githubusercontent.com/movixstream/MovixOpenSource/main/app-tv/movix-tv.apk",
-  "apkSize": 9887012,
-  "apkSha256": "60cba462d4109f024e8a5b11e640e3b2693c3c747e63b06d8797e21cc2f83161",
+  "apkSize": 9888880,
+  "apkSha256": "d841d16e99dd038b59af8d1ba9f2367e084a703d416920faead3836566d348a5",
   "minSdk": 25,
   "notes": {
-    "fr": "Recherche : les titres les plus connus passent en premier (Interstellar dès « inter », Breaking Bad dès « bre », Kaamelott dès « kaame ») et les titres proposés ne montrent plus d'inconnus.",
-    "en": "Search: the best-known titles now come first (Interstellar from \"inter\", Breaking Bad from \"bre\") and suggested titles no longer show obscure ones."
+    "fr": "Fsvid et Vidzy ne s'arrêtent plus au bout d'une minute, et la date de fin du VIP s'affiche correctement dans les réglages.",
+    "en": "Fsvid and Vidzy no longer stop after a minute, and the VIP end date now shows correctly in the settings."
   }
 }
