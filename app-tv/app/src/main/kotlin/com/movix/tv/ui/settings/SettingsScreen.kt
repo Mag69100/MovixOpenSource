@@ -293,7 +293,10 @@ private fun KeyField(value: String, onChange: (String) -> Unit, onDone: () -> Un
  * est un BIGINT) ; la chaîne brute si elle ne se lit pas.
  */
 private fun formatDate(iso: String): String = runCatching {
+    // La base garde `expires_at` en secondes ou en millisecondes selon la clé :
+    // sous 10^12, c'est des secondes (sinon la date tombe en janvier 1970).
     val date = iso.toLongOrNull()
+        ?.let { if (it < 1_000_000_000_000L) it * 1000 else it }
         ?.let { java.time.Instant.ofEpochMilli(it).atZone(java.time.ZoneId.systemDefault()).toLocalDate() }
         ?: OffsetDateTime.parse(iso).toLocalDate()
     date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(Locale.getDefault()))
