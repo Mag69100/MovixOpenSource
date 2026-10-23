@@ -1969,7 +1969,10 @@ const VOE_DOMAIN_PATTERN = new RegExp(
     + '|sandratableother|sandrataxeight|scatch176duplicities|sethniceletter|shannonpersonalcost'
     + '|simpulumlamerop|smoki|stevenfamilyedge|stevenimaginelittle|strawberriesporail|telyn610zoanthropy'
     + '|timberwoodanotia|timmaybealready|toddpartneranimal|toxitabellaeatrebates306|tracylocalschool'
-    + '|uptodatefinishconferenceroom|valeronevijao|walterprettytheir|wolfdyslectic|yodelswartlike)\\.',
+    + '|uptodatefinishconferenceroom|valeronevijao|walterprettytheir|wolfdyslectic|yodelswartlike'
+    // Domaines VOE des lecteurs d'anime-sama (2026-10-19)
+    + '|claireguessthousand|derricknationtop|jamesbornmain|jeremyparticipantanything|megankiddifference'
+    + '|teresapoliticallearn)\\.',
     'i'
 );
 
