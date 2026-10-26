@@ -1,12 +1,12 @@
 {
-  "versionCode": 5,
-  "versionName": "0.2.3",
+  "versionCode": 6,
+  "versionName": "0.2.4",
   "apkUrl": "https://raw.githubusercontent.com/movixstream/MovixOpenSource/main/app-tv/movix-tv.apk",
-  "apkSize": 9888884,
-  "apkSha256": "26b9970f5e1a915406b920b17ae8e0fd83365145a46a98044537e41024bccfe2",
+  "apkSize": 9888880,
+  "apkSha256": "dab70321739bddd5adc3eea459c47e916be87ccbd78fd97968fc35f09e5d630c",
   "minSdk": 25,
   "notes": {
-    "fr": "Fsvid et Vidzy se lisent à nouveau : leur site bloquait l'identité de navigateur qu'utilisait l'appli.",
-    "en": "Fsvid and Vidzy play again: their site was blocking the browser identity the app used."
+    "fr": "Fsvid et Vidzy se lisent à nouveau : leur site a encore changé ses règles.",
+    "en": "Fsvid and Vidzy play again: their site changed its rules once more."
   }
 }
