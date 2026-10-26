@@ -60,7 +60,11 @@ class PlayerEngine(private val context: Context, private val http: OkHttpClient,
                 .setConnectionTimeoutMs(8_000)
                 .setReadTimeoutMs(20_000)
                 .setHandleSetCookieRequests(true)
-        } ?: OkHttpDataSource.Factory(http)
+        } ?: OkHttpDataSource.Factory(playbackHttp)
+
+    private val playbackHttp: OkHttpClient by lazy {
+        http.newBuilder().addInterceptor(ManualGzipInterceptor).build()
+    }
 
     /** Usine de `DataSource` pour une source : [baseHeaders] + règles par hôte sur chaque requête. */
     fun dataSourceFactory(baseHeaders: Map<String, String> = emptyMap()): DataSource.Factory {

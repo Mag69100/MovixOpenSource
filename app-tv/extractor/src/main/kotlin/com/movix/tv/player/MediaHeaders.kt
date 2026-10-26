@@ -17,6 +17,11 @@ object MediaHeaders {
     const val SEC_CH_UA_MOBILE = "?0"
     const val SEC_CH_UA_PLATFORM = "\"Windows\""
     const val ACCEPT_LANGUAGE = "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7"
+    // Fsvid/Vidzy servent un faux master à tout Accept-Encoding qui n'est pas
+    // exactement celui de Chrome (mesuré le 2026-10-26), dont le « gzip » seul
+    // d'OkHttp. Le CDN répond alors en gzip pour les playlists : Cronet le
+    // décode seul, OkHttp passe par ManualGzipInterceptor.
+    const val CHROME_ACCEPT_ENCODING = "gzip, deflate, br, zstd"
 
     /** User-Agent de l'extraction Lulu/Veev/Vidara : leur jeton est lié à cette identité. */
     const val EXTRACTION_USER_AGENT = "Mozilla/5.0 Chrome/143.0.0.0"
@@ -90,6 +95,7 @@ object MediaHeaders {
             headers.setCanonical("Sec-Ch-Ua-Mobile", SEC_CH_UA_MOBILE)
             headers.setCanonical("Sec-Ch-Ua-Platform", SEC_CH_UA_PLATFORM)
             headers.setCanonical("User-Agent", SIGNED_USER_AGENT)
+            headers.setCanonical("Accept-Encoding", CHROME_ACCEPT_ENCODING)
         }
         headers.setCanonical("Sec-Fetch-Site", "cross-site")
         headers.setCanonical("Sec-Fetch-Mode", "cors")
