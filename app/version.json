@@ -1,13 +1,13 @@
 {
-  "version": "2.6.9",
-  "buildNumber": 46,
+  "version": "2.6.10",
+  "buildNumber": 47,
   "apkUrl": "https://raw.githubusercontent.com/movixstream/MovixOpenSource/main/app/movix-android.apk",
   "apkSizeBytes": 64303113,
-  "apkSha256": "435ab5ed54f8de6a2ba207ce87371cdd182e6f5fe1b536625bf67beb25365c47",
+  "apkSha256": "b209d4a85f43953b8e75a3aa55a799ac6a6699ee4c4f045ed1f94501ce31a6b2",
   "mandatory": false,
-  "releasedAt": "2026-10-23T16:26:17.000Z",
+  "releasedAt": "2026-10-26T15:53:16.000Z",
   "releaseNotes": {
-    "fr": "Fsvid et Vidzy ne s'arrêtent plus au bout d'une minute : leur site exige désormais une clé, l'appli la demande.",
-    "en": "Fsvid and Vidzy no longer stop after a minute: their site now requires a key, and the app requests it."
+    "fr": "Fsvid et Vidzy se lisent à nouveau : leur site bloquait l'identité de navigateur qu'utilisait l'appli.",
+    "en": "Fsvid and Vidzy play again: their site was blocking the browser identity the app used."
   }
 }
