@@ -9,9 +9,11 @@ package com.movix.tv.player
 object MediaHeaders {
     // Un vrai Chrome n'émet jamais Sec-Ch-Ua seul, et la version majeure de
     // l'User-Agent correspond à celle de Sec-Ch-Ua : sinon Fsvid sert son leurre.
+    // Chrome 142 et non 140 : depuis le 2026-10-26, Fsvid/Vidzy servent un faux
+    // master qui boucle sur lui-même à la chaîne exacte « Windows Chrome 140 ».
     const val SIGNED_USER_AGENT =
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
-    const val SEC_CH_UA = "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\""
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+    const val SEC_CH_UA = "\"Chromium\";v=\"142\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"142\""
     const val SEC_CH_UA_MOBILE = "?0"
     const val SEC_CH_UA_PLATFORM = "\"Windows\""
     const val ACCEPT_LANGUAGE = "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7"
