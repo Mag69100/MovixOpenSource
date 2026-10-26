@@ -1,12 +1,12 @@
 {
-  "versionCode": 4,
-  "versionName": "0.2.2",
+  "versionCode": 5,
+  "versionName": "0.2.3",
   "apkUrl": "https://raw.githubusercontent.com/movixstream/MovixOpenSource/main/app-tv/movix-tv.apk",
-  "apkSize": 9888880,
-  "apkSha256": "d841d16e99dd038b59af8d1ba9f2367e084a703d416920faead3836566d348a5",
+  "apkSize": 9888884,
+  "apkSha256": "26b9970f5e1a915406b920b17ae8e0fd83365145a46a98044537e41024bccfe2",
   "minSdk": 25,
   "notes": {
-    "fr": "Fsvid et Vidzy ne s'arrêtent plus au bout d'une minute, et la date de fin du VIP s'affiche correctement dans les réglages.",
-    "en": "Fsvid and Vidzy no longer stop after a minute, and the VIP end date now shows correctly in the settings."
+    "fr": "Fsvid et Vidzy se lisent à nouveau : leur site bloquait l'identité de navigateur qu'utilisait l'appli.",
+    "en": "Fsvid and Vidzy play again: their site was blocking the browser identity the app used."
   }
 }
