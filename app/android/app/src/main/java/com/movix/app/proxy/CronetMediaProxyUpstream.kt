@@ -154,6 +154,11 @@ internal class CronetMediaProxyUpstream(
         val mergedHeaders = linkedMapOf<String, String>()
         mergedHeaders.putAll(MediaProxyPolicy.sanitizeRequestHeaders(target.headers))
         mergedHeaders.putAll(MediaProxyPolicy.sanitizeLocalRequestHeaders(localRequestHeaders))
+        // Fsvid/Vidzy n'acceptent que l'Accept-Encoding exact de Chrome : ne
+        // pas dépendre de celui que la version de Cronet installée annonce.
+        MediaProxyPolicy.playbackAcceptEncoding(target.upstreamUrl)?.let {
+            mergedHeaders["Accept-Encoding"] = it
+        }
         mergedHeaders.putIfAbsent("Sec-Ch-Ua", MediaProxyPolicy.PLAYBACK_SEC_CH_UA)
         mergedHeaders.putIfAbsent(
             "Sec-Ch-Ua-Mobile",
