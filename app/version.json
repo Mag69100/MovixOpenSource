@@ -1,13 +1,13 @@
 {
-  "version": "2.6.10",
-  "buildNumber": 47,
+  "version": "2.6.11",
+  "buildNumber": 48,
   "apkUrl": "https://raw.githubusercontent.com/movixstream/MovixOpenSource/main/app/movix-android.apk",
-  "apkSizeBytes": 64303113,
-  "apkSha256": "b209d4a85f43953b8e75a3aa55a799ac6a6699ee4c4f045ed1f94501ce31a6b2",
+  "apkSizeBytes": 64303161,
+  "apkSha256": "8c4927616ad9786d133658c38ee102948bf7420dc863af44a2ebb704b3706865",
   "mandatory": false,
-  "releasedAt": "2026-10-26T15:53:16.000Z",
+  "releasedAt": "2026-10-26T19:27:53.000Z",
   "releaseNotes": {
-    "fr": "Fsvid et Vidzy se lisent à nouveau : leur site bloquait l'identité de navigateur qu'utilisait l'appli.",
-    "en": "Fsvid and Vidzy play again: their site was blocking the browser identity the app used."
+    "fr": "Fsvid et Vidzy se lisent à nouveau : leur site a encore changé ses règles.",
+    "en": "Fsvid and Vidzy play again: their site changed its rules once more."
   }
 }
