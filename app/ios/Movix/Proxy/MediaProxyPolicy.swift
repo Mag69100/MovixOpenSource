@@ -141,13 +141,20 @@ enum MediaProxyPolicy {
   // décompresse pas les réponses et doit préserver les Range.
   private static let providerMediaAcceptEncoding =
     "identity, gzip;q=0, deflate;q=0, br;q=0, zstd;q=0"
-  // Fsvid/Vidzy servent leur playlist leurre (`/e/segN.ts`, la vidéo troll) en
-  // 200 dès que `gzip;q=0` figure dans la requête (mesuré le 2026-10-15) :
-  // `identity` seul donne le vrai flux, lui aussi non compressé.
+  // Fsvid/Vidzy servent un faux master (sa variante renvoie le master
+  // lui-même) à tout Accept-Encoding autre que celui de Chrome, `identity`
+  // compris (mesuré le 2026-10-26). Leur CDN répond alors en gzip pour les
+  // playlists, que MediaProxyServer décompresse ; les segments arrivent bruts.
+  private static let fsvidVidzyMediaAcceptEncoding = "gzip, deflate, br, zstd"
 
   static func playbackAcceptEncoding(for url: URL) -> String {
     guard let host = url.host?.lowercased() else { return "identity" }
     let normalizedHost = host.hasSuffix(".") ? String(host.dropLast()) : host
+    if providerDecoyHostSuffixes.contains(where: {
+      normalizedHost == $0 || normalizedHost.hasSuffix(".\($0)")
+    }) {
+      return fsvidVidzyMediaAcceptEncoding
+    }
     let isUqloadHost = normalizedHost.range(
       of: #"(?:^|\.)uqload\.[a-z]{2,24}$"#,
       options: .regularExpression

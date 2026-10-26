@@ -16,6 +16,8 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.zip.GZIPInputStream
+import java.util.zip.InflaterInputStream
 import org.chromium.net.CronetEngine
 import org.chromium.net.CronetException
 import org.chromium.net.ExperimentalCronetEngine
@@ -38,6 +40,33 @@ internal fun decodedCronetResponseHeaders(headers: Map<String, String>): Map<Str
         !it.equals("Content-Encoding", ignoreCase = true) &&
             !it.equals("Content-Length", ignoreCase = true)
     }
+}
+
+/**
+ * OkHttp ne décompresse plus rien dès que l'appelant fixe Accept-Encoding, ce
+ * que fait la politique pour Fsvid/Vidzy (leur CDN exige celui de Chrome et
+ * répond alors en gzip pour les playlists). On décode donc ici gzip et
+ * deflate ; tout autre encodage est rendu tel quel.
+ */
+internal fun decodedManualResponse(
+    method: String,
+    statusCode: Int,
+    headers: Map<String, String>,
+    body: InputStream,
+): Pair<Map<String, String>, InputStream> {
+    if (method.equals("HEAD", ignoreCase = true) || statusCode !in 200..299 || statusCode == 204) {
+        return headers to body
+    }
+    val encoding = headers.entries
+        .firstOrNull { it.key.equals("Content-Encoding", ignoreCase = true) }
+        ?.value?.trim()?.lowercase()
+        ?: return headers to body
+    val decoded = when (encoding) {
+        "gzip", "x-gzip" -> GZIPInputStream(body)
+        "deflate" -> InflaterInputStream(body)
+        else -> return headers to body
+    }
+    return decodedCronetResponseHeaders(headers) to decoded
 }
 
 /**

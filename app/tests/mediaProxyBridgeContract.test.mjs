@@ -13,11 +13,11 @@ const providerSignedUserAgent =
 const providerSecChUa = '"Chromium";v="142", "Not=A?Brand";v="24", "Google Chrome";v="142"';
 // Les trois indices client partent ensemble chez un vrai Chrome, avec une
 // version majeure identique à celle de l'User-Agent.
-// `gzip;q=0` fait servir à Fsvid/Vidzy leur playlist leurre `/e/segN.ts` en
-// 200 : leurs médias partent en `identity` seul. Uqload garde ses tokens q=0.
+// Fsvid/Vidzy servent un faux master à tout Accept-Encoding qui n'est pas
+// exactement celui de Chrome. Uqload garde ses tokens q=0.
 const uqloadMediaEncoding = 'identity, gzip;q=0, deflate;q=0, br;q=0, zstd;q=0';
 const providerClientHints = {
-  'Accept-Encoding': 'identity',
+  'Accept-Encoding': 'gzip, deflate, br, zstd',
   'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
   'Sec-Ch-Ua': providerSecChUa,
   'Sec-Ch-Ua-Mobile': '?0',

@@ -27,10 +27,11 @@ const PROVIDER_ACCEPT_LANGUAGE = 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7';
 // même avec q=0.
 const PROVIDER_MEDIA_ACCEPT_ENCODING =
   'identity, gzip;q=0, deflate;q=0, br;q=0, zstd;q=0';
-// Fsvid/Vidzy, eux, servent leur playlist leurre (`/e/segN.ts`, la « vidéo
-// troll ») en 200 dès que `gzip;q=0` figure dans la requête — mesuré le
-// 2026-10-15. `identity` seul donne le vrai flux, toujours non compressé.
-const FSVID_VIDZY_MEDIA_ACCEPT_ENCODING = 'identity';
+// Fsvid/Vidzy, eux, servent un faux master (sa variante renvoie le master
+// lui-même) à tout Accept-Encoding autre que celui de Chrome, `identity`
+// compris — mesuré le 2026-10-26. Les proxys natifs décompressent le gzip
+// qu'ils reçoivent alors pour les playlists.
+const FSVID_VIDZY_MEDIA_ACCEPT_ENCODING = 'gzip, deflate, br, zstd';
 const PROVIDER_MEDIA_PATH = /\.(?:m3u8|mpd|mp4|m4v|m4s|ts|aac|m4a|vtt|srt|key)$/i;
 
 // User-Agent émis par l'extraction LuluStream/Veev/Vidara. Volontairement

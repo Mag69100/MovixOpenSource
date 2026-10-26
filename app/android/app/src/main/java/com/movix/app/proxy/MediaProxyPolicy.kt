@@ -93,10 +93,12 @@ object MediaProxyPolicy {
     // Accept-Encoding est fourni par l'appelant.
     private const val PROVIDER_MEDIA_ACCEPT_ENCODING =
         "identity, gzip;q=0, deflate;q=0, br;q=0, zstd;q=0"
-    // Fsvid/Vidzy servent leur playlist leurre (`/e/segN.ts`, la video troll)
-    // en 200 des que `gzip;q=0` figure dans la requete (mesure le 2026-10-15).
-    // `identity` seul donne le vrai flux, toujours non compresse.
-    private const val FSVID_VIDZY_MEDIA_ACCEPT_ENCODING = "identity"
+    // Fsvid/Vidzy servent un faux master (sa variante renvoie le master
+    // lui-même) à tout Accept-Encoding autre que celui de Chrome, `identity`
+    // compris (mesuré le 2026-10-26). Le CDN répond alors en gzip pour les
+    // playlists : les chemins OkHttp le décodent (decodedManualResponse),
+    // Cronet le fait seul.
+    private const val FSVID_VIDZY_MEDIA_ACCEPT_ENCODING = "gzip, deflate, br, zstd"
     private val providerDecoySegmentPattern = Regex("^/e/seg\\d+\\.ts$")
     private val uqloadHostPattern = Regex("(?:^|\\.)uqload\\.[a-z]{2,24}$")
     private val tokenPattern = Regex("^[A-Za-z0-9_-]{8,128}$")

@@ -239,10 +239,11 @@ class MediaProxyPolicyTest {
 
     @Test
     fun limitsExplicitEncodingToTheProviderDomains() {
-        // `gzip;q=0` fait servir a Fsvid/Vidzy leur playlist leurre `/e/segN.ts`.
+        // Fsvid/Vidzy servent un faux master a tout Accept-Encoding qui n'est
+        // pas exactement celui de Chrome.
         for (host in listOf("r1.fsvid.lol", "fsvid.lol", "u14.vidzy.cc", "vidzy.org")) {
             assertEquals(
-                "identity",
+                "gzip, deflate, br, zstd",
                 MediaProxyPolicy.playbackAcceptEncoding("https://$host/master.m3u8"),
             )
         }

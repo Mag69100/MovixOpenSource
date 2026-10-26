@@ -412,12 +412,17 @@ internal class OkHttpMediaProxyUpstream(
                 },
                 localRequestHeaders = localRequestHeaders,
             )
-            val responseBody = response.body
+            val (decodedHeaders, decodedBody) = decodedManualResponse(
+                target.method,
+                response.code,
+                responseHeaders,
+                response.body?.byteStream() ?: ByteArrayInputStream(ByteArray(0)),
+            )
             return MediaProxyUpstreamResponse(
                 statusCode = response.code,
                 statusMessage = response.message,
-                headers = responseHeaders,
-                body = responseBody?.byteStream() ?: ByteArrayInputStream(ByteArray(0)),
+                headers = decodedHeaders,
+                body = decodedBody,
                 finalUrl = response.request.url.toString(),
                 onClose = response::close,
             )

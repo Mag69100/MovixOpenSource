@@ -162,11 +162,17 @@ internal class NetworkBoundMediaProxyUpstream(
                 responseHeaders = response.headers,
                 localRequestHeaders = localRequestHeaders,
             )
+            val (decodedHeaders, decodedBody) = decodedManualResponse(
+                target.method,
+                response.statusCode,
+                response.headers,
+                response.body,
+            )
             return MediaProxyUpstreamResponse(
                 statusCode = response.statusCode,
                 statusMessage = response.statusMessage,
-                headers = response.headers,
-                body = response.body,
+                headers = decodedHeaders,
+                body = decodedBody,
                 finalUrl = response.finalUrl,
                 onClose = response::close,
             )
