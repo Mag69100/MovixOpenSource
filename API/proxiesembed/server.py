@@ -903,7 +903,14 @@ PROVIDER_MEDIA_ACCEPT_ENCODING = 'identity, gzip;q=0, deflate;q=0, br;q=0, zstd;
 # s1.fsvid.lol et v6/u14.vidzy.cc). `identity` seul donne le vrai flux, non
 # compressé, playlists comme plages de segments. Le 403 qui avait motivé le
 # token zstd venait de l'empreinte TLS, pas de cet en-tête.
-FSVID_VIDZY_MEDIA_ACCEPT_ENCODING = 'identity'
+#
+# Depuis le 2026-10-26 au soir, c'est l'inverse : le CDN sert son faux master
+# statique (variante qui renvoie le master lui-même) à tout Accept-Encoding
+# autre que celui de Chrome, `identity` compris. Seule la valeur exacte de
+# Chrome passe. Le CDN répond alors en gzip pour les playlists (décodé par
+# curl_cffi comme par aiohttp, puis réécrit avec sa nouvelle longueur) et sans
+# compression pour les segments.
+FSVID_VIDZY_MEDIA_ACCEPT_ENCODING = 'gzip, deflate, br, zstd'
 _FSVID_VIDZY_DECOY_PATH = re.compile(r'^/e/seg\d+\.ts$', re.IGNORECASE)
 
 

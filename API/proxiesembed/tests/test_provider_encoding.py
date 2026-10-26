@@ -89,9 +89,9 @@ class ProviderEncodingTests(unittest.IsolatedAsyncioTestCase):
                 'identity, gzip;q=0, deflate;q=0, br;q=0, zstd;q=0',
             )
         else:
-            # `gzip;q=0` fait servir à Fsvid/Vidzy leur playlist leurre
-            # `/e/segN.ts` en 200 : seul `identity` donne le vrai flux.
-            self.assertEqual(headers.get('Accept-Encoding'), 'identity')
+            # Fsvid/Vidzy servent un faux master à tout Accept-Encoding qui
+            # n'est pas exactement celui de Chrome.
+            self.assertEqual(headers.get('Accept-Encoding'), 'gzip, deflate, br, zstd')
 
     async def test_dedicated_and_generic_relays_use_the_same_encoding(self):
         proxy = self.proxy
