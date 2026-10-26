@@ -120,14 +120,16 @@ enum MediaProxyPolicy {
   // requêtes aussi sûrement qu'une absence d'en-tête. On émet donc la chaîne
   // complète, alignée sur playbackSecChUa et sur le relais Python
   // (API/proxiesembed/server.py, FSVID_VIDZY_CLIENT_HINTS).
+  // Chrome 142 et non 140 : depuis le 2026-10-26, Fsvid/Vidzy servent un faux
+  // master qui boucle sur lui-même à la chaîne exacte « Windows Chrome 140 ».
   static let playbackUserAgent =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-    + "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+    + "(KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
   // Fsvid/Vidzy exigent un Referer sur un de leurs domaines ET la présence de
   // Sec-Ch-Ua. Sans cet en-tête leur CDN répond 302 vers .../troll/master.m3u8
   // (fsvid) ou 403 (vidzy). Seule la présence compte, pas la valeur.
   static let playbackSecChUa =
-    "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\""
+    "\"Chromium\";v=\"142\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"142\""
   // Un vrai Chrome ne dissocie jamais les trois indices client : poser Sec-Ch-Ua
   // seul revenait à annoncer un navigateur tout en le contredisant.
   static let playbackSecChUaMobile = "?0"

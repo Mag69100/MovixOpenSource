@@ -5,15 +5,18 @@
 // laquelle fsvid répond par son flux leurre. Le relais Python a été aligné de
 // la même façon (API/proxiesembed/server.py, FSVID_VIDZY_CLIENT_HINTS) : les
 // deux chemins doivent présenter le même client à l'amont.
+//
+// Chrome 142 et non 140 : depuis le 2026-10-26, Fsvid/Vidzy servent un faux
+// master qui boucle sur lui-même à la chaîne exacte « Windows Chrome 140 ».
 const PROVIDER_SIGNED_USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-  + '(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36';
+  + '(KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36';
 
 // Fsvid/Vidzy refusent une requête HLS qui n'a pas à la fois un Referer sur un
 // de leurs domaines et un en-tête Sec-Ch-Ua : fsvid répond alors par une 302
 // vers son flux leurre (s1.fsvid.lol/troll/master.m3u8) et vidzy par une 403.
 const PROVIDER_SEC_CH_UA =
-  '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"';
+  '"Chromium";v="142", "Not=A?Brand";v="24", "Google Chrome";v="142"';
 const PROVIDER_SEC_CH_UA_MOBILE = '?0';
 const PROVIDER_SEC_CH_UA_PLATFORM = '"Windows"';
 const PROVIDER_ACCEPT_LANGUAGE = 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7';

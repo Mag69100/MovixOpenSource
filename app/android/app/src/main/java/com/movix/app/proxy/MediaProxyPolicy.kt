@@ -70,16 +70,18 @@ object MediaProxyPolicy {
     // nos requetes aussi surement qu'une absence d'entete. On emet donc la
     // chaine complete, alignee sur PLAYBACK_SEC_CH_UA et sur le relais Python
     // (API/proxiesembed/server.py, FSVID_VIDZY_CLIENT_HINTS).
+    // Chrome 142 et non 140 : depuis le 2026-10-26, Fsvid/Vidzy servent un faux
+    // master qui boucle sur lui-même à la chaîne exacte « Windows Chrome 140 ».
     private const val PLAYBACK_USER_AGENT =
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
-            "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+            "(KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
 
     // Fsvid/Vidzy exigent un Referer sur un de leurs domaines ET la presence de
     // Sec-Ch-Ua. Sans cet en-tete leur CDN repond 302 vers .../troll/master.m3u8
     // (fsvid) ou 403 (vidzy). La valeur exacte est ignoree, seule la presence
     // compte, donc on aligne celle d'un Chrome recent.
     const val PLAYBACK_SEC_CH_UA =
-        "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\""
+        "\"Chromium\";v=\"142\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"142\""
 
     // Un vrai Chrome ne dissocie jamais les trois indices client. Poser
     // Sec-Ch-Ua seul revenait a annoncer un navigateur tout en le contredisant

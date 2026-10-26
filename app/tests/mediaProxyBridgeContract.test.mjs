@@ -6,11 +6,11 @@ import ts from 'typescript';
 const root = new URL('../', import.meta.url);
 const providerSignedUserAgent =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-  + '(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36';
+  + '(KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36';
 // Fsvid/Vidzy renvoient leur flux leurre (302 vers .../troll/master.m3u8) ou
 // une 403 tant que la requête n'a pas un Referer sur un de leurs domaines ET
 // un en-tête Sec-Ch-Ua.
-const providerSecChUa = '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"';
+const providerSecChUa = '"Chromium";v="142", "Not=A?Brand";v="24", "Google Chrome";v="142"';
 // Les trois indices client partent ensemble chez un vrai Chrome, avec une
 // version majeure identique à celle de l'User-Agent.
 // `gzip;q=0` fait servir à Fsvid/Vidzy leur playlist leurre `/e/segN.ts` en
