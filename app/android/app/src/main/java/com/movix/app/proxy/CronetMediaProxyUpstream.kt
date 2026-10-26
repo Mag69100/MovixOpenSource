@@ -77,7 +77,8 @@ internal fun decodedManualResponse(
  * Accept-Encoding. Cronet controle cet en-tete et ignore addHeader ;
  * activer Brotli seul ne suffit donc pas. OkHttp permet de le fixer tout en
  * demandant identity pour conserver les octets des playlists et des Range.
- * Fsvid/Vidzy restent sur Cronet : leur CDN exige le TLS de Chrome
+ * Fsvid/Vidzy aussi depuis le 2026-10-26 : leur CDN exige l'Accept-Encoding
+ * exact de Chrome, avec zstd, que Cronet réécrit en « gzip, deflate, br »
  * (voir [MediaProxyPolicy.requiresOkHttpUpstream]).
  *
  * Cronet est asynchrone (callbacks) alors que [MediaProxyUpstream.execute] est
@@ -154,11 +155,6 @@ internal class CronetMediaProxyUpstream(
         val mergedHeaders = linkedMapOf<String, String>()
         mergedHeaders.putAll(MediaProxyPolicy.sanitizeRequestHeaders(target.headers))
         mergedHeaders.putAll(MediaProxyPolicy.sanitizeLocalRequestHeaders(localRequestHeaders))
-        // Fsvid/Vidzy n'acceptent que l'Accept-Encoding exact de Chrome : ne
-        // pas dépendre de celui que la version de Cronet installée annonce.
-        MediaProxyPolicy.playbackAcceptEncoding(target.upstreamUrl)?.let {
-            mergedHeaders["Accept-Encoding"] = it
-        }
         mergedHeaders.putIfAbsent("Sec-Ch-Ua", MediaProxyPolicy.PLAYBACK_SEC_CH_UA)
         mergedHeaders.putIfAbsent(
             "Sec-Ch-Ua-Mobile",

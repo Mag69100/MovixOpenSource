@@ -178,11 +178,19 @@ object MediaProxyPolicy {
      * qui pointe sur `index.m3u8`, lui-même identique (levelParsingError).
      * Cronet présente le TLS de Chromium et obtient le vrai flux, quel que soit
      * l'Accept-Encoding (mesuré le 2026-10-17).
+     *
+     * Le 2026-10-26 au soir, c'est l'inverse : le CDN ne regarde plus le TLS
+     * mais exige l'Accept-Encoding exact de Chrome (« gzip, deflate, br,
+     * zstd »). Cronet réécrit cet en-tête en « gzip, deflate, br » (relevé sur
+     * l'appareil via httpbin) et reçoit le faux master ; OkHttp envoie la
+     * valeur fixée et obtient le vrai, décompressé par decodedManualResponse.
+     * Fsvid/Vidzy repassent donc par OkHttp.
      */
     fun requiresOkHttpUpstream(rawUrl: String): Boolean {
         val host = runCatching { URI(rawUrl).host?.lowercase(Locale.US)?.trimEnd('.') }
             .getOrNull() ?: return false
-        return uqloadHostPattern.containsMatchIn(host)
+        return uqloadHostPattern.containsMatchIn(host) ||
+            PROVIDER_DECOY_HOST_SUFFIXES.any { host == it || host.endsWith(".$it") }
     }
 
     fun validatePublicHttpsUrl(
