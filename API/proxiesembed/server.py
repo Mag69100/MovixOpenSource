@@ -890,7 +890,7 @@ PROBLEMATIC_DOMAINS = frozenset([
 # illégitime : jadis une 302 vers s1.fsvid.lol/troll/master.m3u8, désormais
 # aussi une playlist 200 servie à l'URL réelle, de neuf segments `/e/segN.ts`.
 # Vidzy répond en plus 403 à une empreinte TLS non navigateur (d'où curl_cffi).
-FSVID_VIDZY_SEC_CH_UA = '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"'
+FSVID_VIDZY_SEC_CH_UA = '"Chromium";v="142", "Not=A?Brand";v="24", "Google Chrome";v="142"'
 
 # Uqload : q=0 conserve les tokens du navigateur tout en demandant un corps
 # identity (surtout pas pour Fsvid/Vidzy, voir plus bas) :
@@ -940,9 +940,16 @@ def is_fsvid_vidzy_decoy_playlist(text: str, base_url: str) -> bool:
 # une signature qu'aucun navigateur ne produit. L'extraction et le relais
 # partagent désormais le même jeu, pour que la page d'embed et le CDN voient un
 # client identique.
+#
+# Depuis le 2026-10-26, le CDN sert un faux master statique (sa variante
+# `index.m3u8` renvoie le master lui-même, le lecteur tourne en rond) à cette
+# chaîne exacte en Chrome 140 Windows : Chrome 139, 141 ou 142 passent, comme
+# 140 sous Android. On annonce donc Chrome 142, la version que curl_cffi imite
+# en TLS (`impersonate='chrome'`). Prochaine coupure : essayer d'abord une
+# autre version de l'User-Agent sur le master.
 FSVID_VIDZY_USER_AGENT = (
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-    '(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'
+    '(KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'
 )
 FSVID_VIDZY_CLIENT_HINTS = {
     'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
