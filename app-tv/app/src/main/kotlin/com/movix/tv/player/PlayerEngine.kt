@@ -54,13 +54,16 @@ class PlayerEngine(private val context: Context, private val http: OkHttpClient,
         Class.forName("android.os.SystemProperties").getMethod("get", String::class.java).invoke(null, "debug.movix.nocronet") == "1"
     }.getOrDefault(false)
 
-    private fun upstream(): DataSource.Factory =
-        cronet?.let {
+    private fun upstream(): DataSource.Factory {
+        val okHttp = OkHttpDataSource.Factory(playbackHttp)
+        val cronetFactory = cronet?.let {
             CronetDataSource.Factory(it, cronetExecutor)
                 .setConnectionTimeoutMs(8_000)
                 .setReadTimeoutMs(20_000)
                 .setHandleSetCookieRequests(true)
-        } ?: OkHttpDataSource.Factory(playbackHttp)
+        } ?: return okHttp
+        return HostRoutingDataSource.Factory(cronetFactory, okHttp, HostRoutingDataSource::needsExactChromeEncoding)
+    }
 
     private val playbackHttp: OkHttpClient by lazy {
         http.newBuilder().addInterceptor(ManualGzipInterceptor).build()
