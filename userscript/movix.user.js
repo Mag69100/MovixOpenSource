@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Movix Proxy Extension (Tampermonkey)
 // @namespace    https://movix.cash
-// @version      1.7.5
+// @version      1.7.6
 // @description  Extension proxy pour Live TV Movix - Contourne CORS, injecte les headers et extrait les sources Nexus - version userscript Tampermonkey
 // @author       Movix
 // @updateURL    https://github.com/movixstream/MovixOpenSource/raw/refs/heads/main/userscript/movix.user.js
@@ -427,7 +427,7 @@
 
   const USERSCRIPT_MANIFEST = {
     name: "Movix Proxy Extension",
-    version: "1.7.5",
+    version: "1.7.6",
     description:
       "Extension proxy pour Live TV Movix - Contourne CORS, injecte les headers et extrait les sources Nexus",
   };
@@ -829,6 +829,13 @@
     );
     const body = serializeBody(init.body);
     const request = getGMRequest();
+    // Un gestionnaire peut taire l'en-tête Cookie posé à la main ; Tampermonkey
+    // et Violentmonkey prennent aussi l'option `cookie`, qu'ils ajoutent aux
+    // cookies envoyés (cookie de session Fsvid/Vidzy, voir
+    // fsvidVidzySessionCookie).
+    const cookieHeader = Object.keys(headers).find(
+      (name) => name.toLowerCase() === "cookie",
+    );
 
     return new Promise((resolve, reject) => {
       let finished = false;
@@ -860,6 +867,7 @@
           method,
           url: requestUrl,
           headers,
+          ...(cookieHeader ? { cookie: headers[cookieHeader] } : {}),
           data: body,
           responseType: "arraybuffer",
           timeout: init.timeout ?? 30000,
@@ -5176,6 +5184,23 @@
   /**
    * Set up DNR headers for a service's extracted URL so the browser player can use it
    */
+  /**
+   * Cookie de session que le master Fsvid/Vidzy pose (`vz_pe`/`fsv_pe`, valeur
+   * = jeton `t=` de son URL). Depuis le 2026-10-27, Vidzy sert sa fausse
+   * playlist de 177 octets à la place des segments après quelques dizaines de
+   * requêtes sans lui. N'importe quel jeton valide du même serveur suffit,
+   * d'où une seule règle par domaine. Même code que l'extension.
+   */
+  function fsvidVidzySessionCookie(url) {
+    try {
+      const token = new URL(url).searchParams.get("t") || "";
+      if (!/^[A-Za-z0-9_-]{16,128}$/.test(token)) return null;
+      return `vz_pe=${token}; fsv_pe=${token}`;
+    } catch {
+      return null;
+    }
+  }
+
   async function setupHeadersForService(type, url, referer) {
     // Fsvid needs different referers:
     // - Embed page (fsvid.lol/embed-xxx) → fs13.lol (required by fsvid to serve content)
@@ -5261,8 +5286,12 @@
       },
     };
 
-    const hdrs = headerMap[type];
+    let hdrs = headerMap[type];
     if (!hdrs || !url) return;
+    if (type === "fsvid" || type === "vidzy") {
+      const cookie = fsvidVidzySessionCookie(url);
+      if (cookie) hdrs = { ...hdrs, Cookie: cookie };
+    }
 
     try {
       const parsedUrl = new URL(url);
