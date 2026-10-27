@@ -2244,6 +2244,24 @@ async function extractAll(sources) {
 /**
  * Set up DNR headers for a service's extracted URL so the browser player can use it
  */
+/**
+ * Cookie de session que le master Fsvid/Vidzy pose (`vz_pe`/`fsv_pe`, valeur
+ * = jeton `t=` de son URL). Depuis le 2026-10-27, Vidzy sert sa fausse
+ * playlist de 177 octets à la place des segments après quelques dizaines de
+ * requêtes sans lui. Le navigateur ne le renvoie pas : cookie tiers (bloqué
+ * par Brave), et hls.js lit sans `credentials`. N'importe quel jeton valide
+ * du même serveur suffit, d'où une seule règle par domaine.
+ */
+function fsvidVidzySessionCookie(url) {
+    try {
+        const token = new URL(url).searchParams.get('t') || '';
+        if (!/^[A-Za-z0-9_-]{16,128}$/.test(token)) return null;
+        return `vz_pe=${token}; fsv_pe=${token}`;
+    } catch {
+        return null;
+    }
+}
+
 async function setupHeadersForService(type, url, referer) {
     // Fsvid needs different referers:
     // - Embed page (fsvid.lol/embed-xxx) → fsmirror46.lol (required by fsvid to serve content)
@@ -2301,8 +2319,12 @@ async function setupHeadersForService(type, url, referer) {
         kisskh: { 'Referer': 'https://kisskh.do/', 'Origin': 'https://kisskh.do' },
     };
 
-    const hdrs = headerMap[type];
+    let hdrs = headerMap[type];
     if (!hdrs || !url) return;
+    if (type === 'fsvid' || type === 'vidzy') {
+        const cookie = fsvidVidzySessionCookie(url);
+        if (cookie) hdrs = { ...hdrs, 'Cookie': cookie };
+    }
 
     try {
         const parsedUrl = new URL(url);
