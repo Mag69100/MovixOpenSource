@@ -66,7 +66,7 @@ class PlayerEngine(private val context: Context, private val http: OkHttpClient,
     }
 
     private val playbackHttp: OkHttpClient by lazy {
-        http.newBuilder().addInterceptor(ManualGzipInterceptor).build()
+        http.newBuilder().cookieJar(PlaybackCookieJar).addInterceptor(ManualGzipInterceptor).build()
     }
 
     /** Usine de `DataSource` pour une source : [baseHeaders] + règles par hôte sur chaque requête. */
