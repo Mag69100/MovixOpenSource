@@ -147,6 +147,24 @@ enum MediaProxyPolicy {
   // playlists, que MediaProxyServer décompresse ; les segments arrivent bruts.
   private static let fsvidVidzyMediaAcceptEncoding = "gzip, deflate, br, zstd"
 
+  /// Cookie de session que le master Fsvid/Vidzy pose (`vz_pe`/`fsv_pe`, valeur
+  /// = jeton `t=` de son URL) et sans lequel Vidzy sert sa fausse variante de
+  /// 177 octets (mesuré le 2026-10-27). Le transport épinglé n'a pas de
+  /// stockage de cookies : on le reconstruit depuis le jeton de chaque requête.
+  static func providerSessionCookie(for url: URL) -> String? {
+    guard let host = url.host?.lowercased() else { return nil }
+    let normalizedHost = host.hasSuffix(".") ? String(host.dropLast()) : host
+    guard providerDecoyHostSuffixes.contains(where: {
+      normalizedHost == $0 || normalizedHost.hasSuffix(".\($0)")
+    }),
+      let token = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+        .queryItems?.first(where: { $0.name == "t" })?.value,
+      (16...128).contains(token.count),
+      token.allSatisfy({ $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-" || $0 == "_") })
+    else { return nil }
+    return "vz_pe=\(token); fsv_pe=\(token)"
+  }
+
   static func playbackAcceptEncoding(for url: URL) -> String {
     guard let host = url.host?.lowercased() else { return "identity" }
     let normalizedHost = host.hasSuffix(".") ? String(host.dropLast()) : host

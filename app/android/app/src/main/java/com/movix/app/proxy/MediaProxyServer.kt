@@ -314,6 +314,7 @@ internal class OkHttpMediaProxyUpstream(
     }
     private val client = OkHttpClient.Builder()
         .dns(safeDns)
+        .cookieJar(MediaProxyCookieJar)
         .followRedirects(false)
         .followSslRedirects(false)
         .connectTimeout(15, TimeUnit.SECONDS)

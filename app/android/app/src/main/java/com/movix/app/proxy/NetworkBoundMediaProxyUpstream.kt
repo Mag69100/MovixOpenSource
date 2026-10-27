@@ -76,6 +76,7 @@ internal class NetworkBoundMediaProxyUpstream(
     private val client = OkHttpClient.Builder()
         .socketFactory(network.socketFactory)
         .dns(networkDns)
+        .cookieJar(MediaProxyCookieJar)
         .followRedirects(false)
         .followSslRedirects(false)
         .connectTimeout(15, TimeUnit.SECONDS)
