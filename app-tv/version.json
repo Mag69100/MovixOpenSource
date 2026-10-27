@@ -1,12 +1,12 @@
 {
-  "versionCode": 6,
-  "versionName": "0.2.4",
+  "versionCode": 7,
+  "versionName": "0.2.5",
   "apkUrl": "https://raw.githubusercontent.com/movixstream/MovixOpenSource/main/app-tv/movix-tv.apk",
-  "apkSize": 9888880,
-  "apkSha256": "dab70321739bddd5adc3eea459c47e916be87ccbd78fd97968fc35f09e5d630c",
+  "apkSize": 9889020,
+  "apkSha256": "d71aee21b63cfd8b0956ef8842c6fd34be13bb5a0238b928903d5f4857c85964",
   "minSdk": 25,
   "notes": {
-    "fr": "Fsvid et Vidzy se lisent à nouveau : leur site a encore changé ses règles.",
-    "en": "Fsvid and Vidzy play again: their site changed its rules once more."
+    "fr": "Fsvid et Vidzy se lisent de nouveau sur la télé.",
+    "en": "Fsvid and Vidzy play again on the TV."
   }
 }
