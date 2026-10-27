@@ -22,6 +22,7 @@ object MediaHeaders {
     // d'OkHttp. Le CDN répond alors en gzip pour les playlists : Cronet le
     // décode seul, OkHttp passe par ManualGzipInterceptor.
     const val CHROME_ACCEPT_ENCODING = "gzip, deflate, br, zstd"
+    private val MEDIA_PATH = Regex("""\.(?:m3u8|mpd|mp4|m4v|m4s|ts|aac|m4a|vtt|srt|key)$""", RegexOption.IGNORE_CASE)
 
     /** User-Agent de l'extraction Lulu/Veev/Vidara : leur jeton est lié à cette identité. */
     const val EXTRACTION_USER_AGENT = "Mozilla/5.0 Chrome/143.0.0.0"
@@ -95,7 +96,12 @@ object MediaHeaders {
             headers.setCanonical("Sec-Ch-Ua-Mobile", SEC_CH_UA_MOBILE)
             headers.setCanonical("Sec-Ch-Ua-Platform", SEC_CH_UA_PLATFORM)
             headers.setCanonical("User-Agent", SIGNED_USER_AGENT)
-            headers.setCanonical("Accept-Encoding", CHROME_ACCEPT_ENCODING)
+            // Médias seulement, comme dans l'app mobile : sur la page embed
+            // (extraction), OkHttp ne décompresserait pas la réponse et le
+            // userscript lirait des octets illisibles.
+            if (MEDIA_PATH.containsMatchIn(url.substringBefore('#').substringBefore('?'))) {
+                headers.setCanonical("Accept-Encoding", CHROME_ACCEPT_ENCODING)
+            }
         }
         headers.setCanonical("Sec-Fetch-Site", "cross-site")
         headers.setCanonical("Sec-Fetch-Mode", "cors")
